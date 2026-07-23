@@ -40,11 +40,16 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive  } from 'vue'
+  import { ref, reactive, watch  } from 'vue'
 
   import type { TableDataInterface_normalCostom } from '@/interface/menu'
   import { header as normal_custom_header, results as normal_custom_results } from '@/assets/data/normalCustom.js'
   import { header as meal_header, results as meal_results } from '@/assets/data/meal.js'
+  import { useDlcFilterStore } from '@/stores/dlcFilter'
+  import { storeToRefs } from 'pinia'
+
+  const dlcFilterStore = useDlcFilterStore()
+  const { selectedDlcs } = storeToRefs(dlcFilterStore)
 
   // 选择的地点
   const zoneName = ref('')
@@ -78,7 +83,8 @@
 
   const selectZone = (val: string) => {
     currentZoneCustom = normalCustomResults.filter((f: { [x: string]: string }) => f['出没地点'].split('、').some(s => s=== val)).map((m: { [x: string]: string }) => m['名称'])
-    tableData = getTableData(val)
+    const data = getTableData(val)
+    tableData.splice(0, tableData.length, ...data.filter(item => dlcFilterStore.filterByDlc(item.mealName)))
   }
 
   const getCustomTags = (customName: string) => {
@@ -119,6 +125,12 @@
     }).sort((a: TableDataInterface_normalCostom, b: TableDataInterface_normalCostom) => b.haveTwo - a.haveTwo)
     return TableData
   }
+
+  watch(selectedDlcs, () => {
+    if (zoneName.value) {
+      selectZone(zoneName.value)
+    }
+  }, { deep: true })
 
   </script>
 

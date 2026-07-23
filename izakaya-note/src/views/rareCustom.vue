@@ -62,13 +62,18 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, computed  } from 'vue'
+import { ref, reactive, computed, watch  } from 'vue'
 
 import type { TableDataInterface_rareCostom } from '@/interface/menu'
 import { header as custom_rare_header, results as custom_rare_results } from '@/assets/data/rareCustom.js'
 import { header as meal_header, results as meal_results } from '@/assets/data/meal.js'
 import { header as tags_header } from '@/assets/data/tags.js'
 import { tagsSet as allTags } from '@/assets/data/temp.js'
+import { useDlcFilterStore } from '@/stores/dlcFilter'
+import { storeToRefs } from 'pinia'
+
+const dlcFilterStore = useDlcFilterStore()
+const { selectedDlcs } = storeToRefs(dlcFilterStore)
 
 // 选择的稀客
 const rareName = ref('')
@@ -111,18 +116,28 @@ const selectRareCustom = (val: string) => {
   getMeals(customRareInfo_like, customRareInfo_hate)
 }
 
-const selectTags = () => {
+const applyFilters = () => {
+  let filtered = [...allTableData].filter(item => dlcFilterStore.filterByDlc(item.mealName))
+  
+  if (typeof satisfiedTagsNum.value === 'number') {
+    filtered = filtered.filter(f => f.tagNum === satisfiedTagsNum.value)
+  }
+  
   if (selectedTags.value.length > 0) {
-    tableData = allTableData.filter((f: {[x: string]: any}) => {
+    filtered = filtered.filter((f: {[x: string]: any}) => {
       if (selectedTags_mode.value) {
         return selectedTags.value.every((e: string) => f.tags.includes(e))
       } else {
         return selectedTags.value.some((s: string) => f.tags.includes(s))
       }
     })
-  } else {
-    tableData = allTableData
   }
+  
+  tableData.splice(0, tableData.length, ...filtered)
+}
+
+const selectTags = () => {
+  applyFilters()
 }
 
 const toggleSelectedTagsMode = () => {
@@ -133,14 +148,12 @@ const toggleSelectedTagsMode = () => {
 const selectTagsCount = (num: number | string) => {
   if (typeof num === 'number') {
     allTableData.sort((a: { [x: string]: number }, b: { [x: string]: number }) => b.price - a.price)
-    tableData = allTableData.filter(f => f.tagNum === num)
   } else {
     allTableData.sort((a: { tagNum: number }, b: { tagNum: number }) => b.tagNum - a.tagNum)
-    tableData = allTableData
   }
+  applyFilters()
 }
 
-// 正特性
 const getMeals = function(customRareInfo_like: string[], customRareInfo_hate: string[]): void {
   allTableData = []
   for (const meal of meal_results) {
@@ -148,7 +161,6 @@ const getMeals = function(customRareInfo_like: string[], customRareInfo_hate: st
     const likeNum: number = customRareInfo_like.reduce((init: number, cur:string) => (init += (mealTags.includes(cur)? 1: 0)), 0)
     if(likeNum > 0) {
       const hateNum: number = customRareInfo_hate.reduce((init: number, cur:string) => (init += (mealTags.includes(cur) ? 1: 0)), 0)
-      // 可额外添加的喜爱的tag
       let extra = reactive<string[]>([])
       extra = customRareInfo_like.filter(f => (!mealTags.includes(f) && !(meal['反特性']?.split('、') ?? []).includes(f)))
 
@@ -167,10 +179,20 @@ const getMeals = function(customRareInfo_like: string[], customRareInfo_hate: st
     }
   }
 
-  selectTagsCount(satisfiedTagsNum.value)
-
-  selectTags()
+  if (typeof satisfiedTagsNum.value === 'number') {
+    allTableData.sort((a: { [x: string]: number }, b: { [x: string]: number }) => b.price - a.price)
+  } else {
+    allTableData.sort((a: { tagNum: number }, b: { tagNum: number }) => b.tagNum - a.tagNum)
+  }
+  
+  applyFilters()
 }
+
+watch(selectedDlcs, () => {
+  if (rareName.value) {
+    applyFilters()
+  }
+}, { deep: true })
 
 </script>
 

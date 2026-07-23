@@ -1,12 +1,16 @@
 <template>
   <div class="background"></div>
-  <!-- <UploadImage class="upload-bg"></UploadImage> -->
   <div class="main-contain">
     <div class="tabs">
-      <div v-for="(tab, index) in tabs" :key="tab.url" class="tab" :class="{active: tabIndex === index}" @click="switchTab(tab, index)">{{ tab.name }}</div>
+      <div class="route-tab">
+        <div v-for="(tab, index) in tabs" :key="tab.url" class="tab" :class="{active: tabIndex === index}" @click="switchTab(tab, index)">{{ tab.name }}</div>
+      </div>
+      <div class="dlc-filter-wrapper">
+        <DlcFilter @change="handleDlcChange" />
+      </div>
     </div>
 
-    <div v-if="false" class="get-xlsx">
+    <div v-if="!1" class="get-xlsx">
       <input ref="excel-upload-input" class="excel-upload-input" type="file" accept=".xlsx, .xls" @change="readXlsx">
       <span>选择文件名(选择和excel文件名称语义相近的): </span>
       <el-select v-model="fileName">
@@ -27,11 +31,17 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import * as XLSX from 'xlsx'
 import { ElMessage } from 'element-plus'
-// import UploadImage from '@/components/uploadBgImage.vue'
 import type { routeTab } from '@/interface/menu'
 import { getExcelDataFile } from '@/api/excel.js'
+import DlcFilter from '@/components/DlcFilter.vue'
+import { useDlcFilterStore } from '@/stores/dlcFilter'
 
 const router = useRouter()
+const dlcFilterStore = useDlcFilterStore()
+
+const handleDlcChange = (dlcs: string[]) => {
+  dlcFilterStore.setSelectedDlcs(dlcs)
+}
 
 const tabs: Array<routeTab> = [
   {name: '稀客', url: '/rare_custom'},
@@ -136,10 +146,21 @@ const getHeaderRow = function(sheet: any) {
   background-color: rgb(217, 217, 238);
   padding: 10px 16px;
   display: flex;
+  justify-content: space-between;
   align-items: center;
   border-radius: 50px;
   line-height: 44px;
-  margin: 0 0 6px;
+  margin-bottom: 6px;
+}
+
+.route-tab {
+  display: flex;
+  align-items: center;
+}
+
+.dlc-filter-wrapper {
+  display: flex;
+  align-items: center;
 }
 
 .tab {
