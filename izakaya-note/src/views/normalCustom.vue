@@ -44,7 +44,7 @@
 
   import type { TableDataInterface_normalCostom } from '@/interface/menu'
   import { header as normal_custom_header, results as normal_custom_results } from '@/assets/data/normalCustom.js'
-  import { header as meal_header, results as meal_results } from '@/assets/data/meal.js'
+  import { header as meal_header, results as meal_results } from '@/assets/data/dealMeal.js'
   import { useDlcFilterStore } from '@/stores/dlcFilter'
   import { storeToRefs } from 'pinia'
 

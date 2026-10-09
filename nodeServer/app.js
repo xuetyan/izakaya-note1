@@ -25,6 +25,9 @@ for (const route of routerModules) {
 app.use(router.routes())
 
 // 监听端口
-app.listen(8999, () => {
-    console.log("run success")
+const server = app.listen(8999, () => {
+    const { port } = server.address()
+    const nets = require('os').networkInterfaces()
+    const ip = Object.values(nets).flat().find(i => (i.family === 'IPv4' || i.family === 4) && !i.internal)?.address || '127.0.0.1'
+    console.log(`run success: http://${ip}:${port}`)
 })

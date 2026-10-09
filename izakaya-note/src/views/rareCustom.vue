@@ -66,7 +66,7 @@ import { ref, reactive, computed, watch  } from 'vue'
 
 import type { TableDataInterface_rareCostom } from '@/interface/menu'
 import { header as custom_rare_header, results as custom_rare_results } from '@/assets/data/rareCustom.js'
-import { header as meal_header, results as meal_results } from '@/assets/data/meal.js'
+import { header as meal_header, results as meal_results } from '@/assets/data/dealMeal.js'
 import { header as tags_header } from '@/assets/data/tags.js'
 import { tagsSet as allTags } from '@/assets/data/temp.js'
 import { useDlcFilterStore } from '@/stores/dlcFilter'
